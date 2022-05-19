@@ -8,7 +8,7 @@
             "name": "CUDA C++: Launch",
             "type": "cuda-gdb",
             "request": "launch",
-            "program": "${workspaceFolder}/build/JTCudaLib"
+            "program": "${workspaceFolder}/build/matMulVSCodeDebug"
         },
         {
             "name": "CUDA C++: Attach",

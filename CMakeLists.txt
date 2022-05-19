@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(JTCudaLib VERSION 0.1.0 LANGUAGES CXX CUDA)
+project(matMulVSCodeDebug VERSION 0.1.0 LANGUAGES CXX CUDA)
 enable_language(CUDA)
 set(CUDA_VERBOSE_BUILD ON)
 find_package(CUDA REQUIRED)

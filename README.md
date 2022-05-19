@@ -1,70 +1,55 @@
-# matrixMul - Matrix Multiplication (CUDA Runtime API Version)
+# Setup CMake in VSCode for GPU debugging (in Linux)
 
-## Description
+## Steps
 
-This sample implements matrix multiplication and is exactly the same as Chapter 6 of the programming guide. It has been written for clarity of exposition to illustrate various CUDA programming principles, not with the goal of providing the most performant generic kernel for matrix multiplication.  To illustrate GPU performance for matrix multiply, this sample also shows how to use the new CUDA 4.0 interface for CUBLAS to demonstrate high-performance performance for matrix multiplication.
+1. set the environment variable
+    set cuda software_preemption on
+    export CUDA_DEBUGGER_SOFTWARE_PREEMPTION=1
 
-## Key Concepts
 
-CUDA Runtime API, Linear Algebra
+    2. using CMake
+    Create CMakeLists.txt:
+    {
+    cmake_minimum_required(VERSION 3.0.0)
+    project(matMulVSCodeDebug VERSION 0.1.0 LANGUAGES CXX CUDA)
+    enable_language(CUDA)
+    set(CUDA_VERBOSE_BUILD ON)
+    find_package(CUDA REQUIRED)
 
-## Supported SM Architectures
+    #Add a sub directory where the CMakeLists.txt will be built, and a seperate scope is created. 
+    #For more info, https://levelup.gitconnected.com/cmake-variable-scope-f062833581b7
+    set(CMAKE_CUDA_FLAGS_DEBUG "-g -G")
 
-[SM 3.5 ](https://developer.nvidia.com/cuda-gpus)  [SM 3.7 ](https://developer.nvidia.com/cuda-gpus)  [SM 5.0 ](https://developer.nvidia.com/cuda-gpus)  [SM 5.2 ](https://developer.nvidia.com/cuda-gpus)  [SM 5.3 ](https://developer.nvidia.com/cuda-gpus)  [SM 6.0 ](https://developer.nvidia.com/cuda-gpus)  [SM 6.1 ](https://developer.nvidia.com/cuda-gpus)  [SM 7.0 ](https://developer.nvidia.com/cuda-gpus)  [SM 7.2 ](https://developer.nvidia.com/cuda-gpus)  [SM 7.5 ](https://developer.nvidia.com/cuda-gpus)  [SM 8.0 ](https://developer.nvidia.com/cuda-gpus)  [SM 8.6 ](https://developer.nvidia.com/cuda-gpus)  [SM 8.7 ](https://developer.nvidia.com/cuda-gpus)
+    set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
-## Supported OSes
+    add_executable(${PROJECT_NAME} matrixMul.cu)
 
-Linux, Windows
+    #modify this to find the Common folder of Cuda TOOLKIT
+    target_include_directories(${PROJECT_NAME} PRIVATE "../../../Common/")
 
-## Supported CPU Architecture
+    set_target_properties(${PROJECT_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    }
 
-x86_64, ppc64le, armv7l, aarch64
+    mkdir build
+    cmake -DCMAKE_BUILD_TYPE=Debug -S . -B ./build
 
-## CUDA APIs involved
+    3. build the binary
+    in the build folder
 
-### [CUDA Runtime API](http://docs.nvidia.com/cuda/cuda-runtime-api/index.html)
-cudaFree, cudaEventRecord, cudaMallocHost, cudaProfilerStart, cudaEventCreate, cudaEventElapsedTime, cudaEventSynchronize, cudaFreeHost, cudaMalloc, cudaProfilerStop, cudaStreamCreateWithFlags, cudaEventDestroy, cudaStreamSynchronize, cudaMemcpyAsync
+    make dbg=1
+    file ./matMulVSCodeDebug
+    (see if it can find debug symbols in the file)
+    set break point in kernel
+    and run, if everything goes right it should stop at the breakpoint
 
-## Prerequisites
+    4. setup VSCode environment (IDE)
+    in c_cpp_properties.json add this line in the configuration:     
+        "compileCommands": "${workspaceFolder}/build/compile_commands.json",
 
-Download and install the [CUDA Toolkit 11.6](https://developer.nvidia.com/cuda-downloads) for your corresponding platform.
+    in launch.json (if not created, do it first)
+    point to the binary:
 
-## Build and Run
+    "program": "${workspaceFolder}/build/matMulVSCodeDebug"
 
-### Windows
-The Windows samples are built using the Visual Studio IDE. Solution files (.sln) are provided for each supported version of Visual Studio, using the format:
-```
-*_vs<version>.sln - for Visual Studio <version>
-```
-Each individual sample has its own set of solution files in its directory:
-
-To build/examine all the samples at once, the complete solution files should be used. To build/examine a single sample, the individual sample solution files should be used.
-> **Note:** Some samples require that the Microsoft DirectX SDK (June 2010 or newer) be installed and that the VC++ directory paths are properly set up (**Tools > Options...**). Check DirectX Dependencies section for details."
-
-### Linux
-The Linux samples are built using makefiles. To use the makefiles, change the current directory to the sample directory you wish to build, and run make:
-```
-$ cd <sample_dir>
-$ make
-```
-The samples makefiles can take advantage of certain options:
-*  **TARGET_ARCH=<arch>** - cross-compile targeting a specific architecture. Allowed architectures are x86_64, ppc64le, armv7l, aarch64.
-    By default, TARGET_ARCH is set to HOST_ARCH. On a x86_64 machine, not setting TARGET_ARCH is the equivalent of setting TARGET_ARCH=x86_64.<br/>
-`$ make TARGET_ARCH=x86_64` <br/> `$ make TARGET_ARCH=ppc64le` <br/> `$ make TARGET_ARCH=armv7l` <br/> `$ make TARGET_ARCH=aarch64` <br/>
-    See [here](http://docs.nvidia.com/cuda/cuda-samples/index.html#cross-samples) for more details.
-*   **dbg=1** - build with debug symbols
-    ```
-    $ make dbg=1
-    ```
-*   **SMS="A B ..."** - override the SM architectures for which the sample will be built, where `"A B ..."` is a space-delimited list of SM architectures. For example, to generate SASS for SM 50 and SM 60, use `SMS="50 60"`.
-    ```
-    $ make SMS="50 60"
-    ```
-
-*  **HOST_COMPILER=<host_compiler>** - override the default g++ host compiler. See the [Linux Installation Guide](http://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#system-requirements) for a list of supported host compilers.
-```
-    $ make HOST_COMPILER=g++
-```
-
-## References (for more details)
-
+    set breakpoint and it should stops as well, congrats you can now debug CUDA code in VSCode
+}
